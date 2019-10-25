@@ -79,7 +79,7 @@ REPL read(读取)eval(解析)print(打印)loop(循环)
 - var关键字的缺点
 
 	- 变量的提升：会把变量的声明提升到当前作用域的最顶端
-	- 没有块级作用域
+	- 没有块级作用域概念
 {
   var name = '张三'
 }
@@ -124,7 +124,7 @@ console.log(name);-->同样访问不到块级作用域中const声明的变量
 const name = '周杰伦';
 const name = '杜国章';
 这种方法是不对的。
-	- 必须在声明时就要给变量赋值
+	- 必须在声明变量是就要给变量赋值
 
 - const和let的选择
 
@@ -224,8 +224,8 @@ function eat({ food1 = '黄瓜', food2 = '萝卜', food3 = '炒肝儿', food4 = 
 //   food2: '西蓝花',
 //   food3: '蛋',
 //   food4: '面条'
-// });
-eat({});
+// });--->传了形参打印的就是传入的实参的值。
+eat({});--->不传实参的话，输出的就是默认值
 
 ### 13.数组的解构
 
@@ -264,6 +264,7 @@ console.log(son);
 const arr1 = ['长跑', '跑马拉松', '跑全马', '跑半马']
 const sport = [...arr, ...arr1];
 console.log(sport);
+数组展开符中若有对个数组的话，并且数组中的元素会有重复元素的话，相同的元素并不会覆盖掉，而是依次向后添加。
 
 ### 16.箭头函数
 今天的重点
@@ -274,7 +275,7 @@ console.log(sport);
 如果函数体只有一行，并且有返回值，省略大括号的同时，必须省略return
 - 普通函数无法用箭头函数的方式化简
 - 箭头函数只能化简匿名函数
-- a=>a
+- const exam =a=>a这种写法其实是这种写法的语法糖
 const exam = function(a){
   return a;
 }
@@ -283,6 +284,7 @@ const exam = function(a){
 
 - 箭头函数中的this，在创建箭头函数的时候就确定了，
 this指向的是上下文(和他平级的环境中)中的this
+箭头函数在创建的时候就已经确定了。
 - // 箭头函数中的this指向的是谁
   const person = {
     name: '海尔兄弟',
@@ -299,7 +301,7 @@ this指向的是上下文(和他平级的环境中)中的this
       //   简写成箭头函数
       //   箭头函数中的this指向的是和它平级的环境中this，那么怎么理解这个平级环境呢，可以这么理解，就是在箭头函数上一行打印一下console.log(this)，这个this指向的谁，那么箭头函数中的this指向的就是谁
       //   所以，在这里，console.log(this)指向的是person，所以，箭头函数中的this指向的就是person
-      console.log(this);
+      console.log(this);---->this指向的是person
       window.setTimeout(() => console.log(this), 100);
     }
   }
@@ -314,8 +316,6 @@ this指向的是上下文(和他平级的环境中)中的this
 const fs = require('fs');
 // 声明一个常量fs
 // require('fs')意思：导入fs模块，赋值给常量fs
-// data:是读取的结果
-// err：如果读取失败，保存的是错误信息
 	- 读文件
 // 声明一个常量fs
 // require('fs')意思：导入fs模块，赋值给常量fs
@@ -336,6 +336,10 @@ const noval = `
 `;
 const fs = require('fs');
 // writeFile()中的参数 1：地址 2:写入的内容  3.选项，可选的参数  4.回调函数
+ 参数1：是需要写入的文件
+    参数2：是需要写入的内容
+    参数3：默认值是utf-8
+    参数4：回调函数
 fs.writeFile('./go.txt', noval, err => {
   console.log(err);
 });
@@ -347,8 +351,146 @@ fs.writeFile('./go.txt', noval, err => {
 - 下包
 - 引包
 - 用包
+- fivicon错误是浏览器再找图标
 
 ## 第二天
+
+### 1.补充的终端的命令： cd ../  跳出当前文件夹
+cd ./文件夹  进入文件夹
+
+### 2.nodejs读取文件：
+node.js中的相对路径是相对的是： 终端中的路径或者小黑窗中所处的路径
+
+### 3.为了避免终端找不到路径，我们可以使用绝对路径来解决这个问题，但是不提倡使用绝对路径。
+
+### 4.nodejs中的绝对路径中的全局变量，这里是两个下划线_ _
+__dirname--->定义到当前这个js文件所处的文件夹的绝对路径
+__filename--->定义到当前这个js文件的绝对路径
+
+### 5.Path模块基本使用（也是内置模块）
+
+- path.join([...paths])--->括号中必须是字符串
+把多个路径拼接到一起，保证正确
+const filepath = path.join('info','novel','01.txt');
+info\novel\01.txt
+- const filepath = path.join(__dirname,'./novel/01.txt');
+- path与文件fs模块结合使用
+
+	- // 导入路径包
+const path = require('path');
+// 导入文件包
+const file = require('fs');
+// 生成路径
+const fallpath = path.join(__dirname, './files/01.du.txt');
+// 读取文件
+file.readFile(fallpath, 'utf-8', (erro, data) => {
+  if (erro == null) {
+    console.log(data);
+  } else {
+    console.log(erro);
+  }
+});
+
+- 路径拼写的时候不要写错，一定是这种/斜杠，多个路径之间用逗号“，”分割
+
+### 6.http模块--创建服务器
+也是内置模块
+关闭服务器是Ctrl+c
+
+- 导包
+const http = require('http');
+- 创建服务器对象
+const server = http.createServer(function(request,response){
+    //  content-type内容类型
+    //  text/plain 普通文本
+    //  text/html  HTML结构
+    //  charset=utf-8编码格式
+    response.setHeader('content-type','text/plain;charset=utf-8');
+   //返回内容
+   response.end('how old are you!');--->响应英文的话直接写就行
+   response.end('在你面前他平时总是乐乐呵呵');
+});
+- 开启服务器  开启监听
+参数1：端口号
+参数2：监听地址，省略的话就是本机
+参数3：开启之后的回调函数
+server.listen(8848,function(err){
+   if(err==null){
+      console.log('服务已开启!');
+   }else{
+      console.log('哎呀失败了');
+    }
+});
+- 概念解释
+
+	- 端口
+
+		- 物理端口
+
+			- usb口
+			- 网线口
+			- 耳机口
+			- hdmi显示器，投影仪接口
+
+		- 虚拟端口
+
+			- 电脑中的软件和外部通讯的通道
+			- 只要和外部通讯的软件，都会使用某一个虚拟端口
+			- 一个号而已，0开始递增
+			- 虚拟端口很多
+			- 前10000端口号一般有很多被占用了
+
+	- 子主题 2
+
+### 7.http模块获取用户请求的url地址
+
+- 创建服务器对象
+const server = http.createServer(function(request,response){
+    //content-type内容类型
+    //text/plain 普通文本
+    //charset=utf-8编码格式
+    response.setHeader('content-type','text/plain;charset=utf-8');
+   //返回内容
+   response.end('how old are you!');--->响应英文的话直接写就行
+   response.end('在你面前他平时总是乐乐呵呵');
+   console.log(request.url);--->可以获取用户请求的地址后面的请求参数英文
+   console.log(decodeURI(request.url));--->可以获取请求参数中的汉字
+});
+
+### 8.根据不同的url来做不一样的逻辑
+
+### 9.http模块--读取HTML文件并返回
+
+- 导入模块http开启服务器
+导入模块 fs 读取服务
+导入模块 path 生成路径 
+- 开启服务
+http.createServer(request,response)=>{
+
+})
+- 开启监听
+
+### 10.如果静态资源中图片格式的话，那么就不要设置编码格式了utf-8了
+
+### 11.http://localhost
+     http://127.0.0.1
+这两种方式都是访问的是自己电脑
+
+### 12.用户发送的请求时git还是post请求
+
+- request：请求
+request.method--->获取用户的请求方式GET/POST
+request.url--->获取用户的请求参数
+
+### 13.第三方模块使用步骤
+
+- 第一步：新建文件夹(不要中文)，
+第二步初始化，打开终端输入：npm init -y或者npm init自行输入
+第三部：npm网站找包，下包，导包，用包
+
+### 14.express模块框架
+
+### 15.补充  nodemon这是一个自动启动服务器的小工具
 
 ## 第三天
 
