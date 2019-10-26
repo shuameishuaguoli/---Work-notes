@@ -92,7 +92,7 @@ var name = '王五';
 console.log(name);--->王五
 下面声明的同名变量会把上面声明的同名变量的值给覆盖掉。
 
-- let  常量
+- let  变量
 
 	- 可以理解为var的替代者，学了let之后可以和var说拜拜了。。
 	- let name = ‘Jack’；
@@ -111,7 +111,7 @@ console.log(skill);--->undefined
           name = '杜国章';
 console.log(name);--->杜国章
 
-- const  变量
+- const  常量
 
 	- const  常量名 = xxx
 	- 变量名在当前作用域不会提升
@@ -269,7 +269,8 @@ console.log(sport);
 ### 16.箭头函数
 今天的重点
 
-- 省略function，变为'=>' 
+- 普通函数简化箭头函数的规则：
+省略function，变为'=>' 
 如果形参只有一个，可以省略小括号，
 如果函数体，只有一行，可以省略大括号，
 如果函数体只有一行，并且有返回值，省略大括号的同时，必须省略return
@@ -357,6 +358,8 @@ fs.writeFile('./go.txt', noval, err => {
 
 ### 1.补充的终端的命令： cd ../  跳出当前文件夹
 cd ./文件夹  进入文件夹
+mkdir 文件名
+这是一个命令，创建文件夹的命令
 
 ### 2.nodejs读取文件：
 node.js中的相对路径是相对的是： 终端中的路径或者小黑窗中所处的路径
@@ -391,11 +394,12 @@ file.readFile(fallpath, 'utf-8', (erro, data) => {
   }
 });
 
-- 路径拼写的时候不要写错，一定是这种/斜杠，多个路径之间用逗号“，”分割
+- 路径拼写的时候不要写错，一定是这种/斜杠，多个路径之间的拼接用逗号“，”分割
 
 ### 6.http模块--创建服务器
 也是内置模块
 关闭服务器是Ctrl+c
+这种服务器统一叫静态资源服务器
 
 - 导包
 const http = require('http');
@@ -474,7 +478,7 @@ http.createServer(request,response)=>{
 
 ### 11.http://localhost
      http://127.0.0.1
-这两种方式都是访问的是自己电脑
+这两种方式都是访问的是自己电脑，只能是自己访问自己电脑的时候可以简写这种ip地址
 
 ### 12.用户发送的请求时git还是post请求
 
@@ -486,18 +490,197 @@ request.url--->获取用户的请求参数
 
 - 第一步：新建文件夹(不要中文)，
 第二步初始化，打开终端输入：npm init -y或者npm init自行输入
-第三部：npm网站找包，下包，导包，用包
+第三部：npm网站找包，下包，导包，用包  npm i express
 
 ### 14.express模块框架
 
-### 15.补充  nodemon这是一个自动启动服务器的小工具
+- 第二天会讲
+
+### 15.补充  nodemon这是一个自动启动服务器的小工具，只要保存文档就会自动开启服务器，比较方便。
+直接 npm i nodemon 安装
+
+### 16.readFile()中的utf-8为什么可以省略？
+     HTML页面中有utf-8这个字段，浏览器可以识别到
+     对于非文本类的文件，浏览器绝大多数都可以自动的推断出类型，
+     使用对应的方式去解析，所有当页面中图片格式的文件的时候，readFile()这个方法中的utf-8就不用写了。
+     学名叫嗅探，加载之前先嗅嗅。。
 
 ## 第三天
+
+### 1.express基本使用
+
+- 1.// 导包
+const express = require('express');
+// 创建服务器对象
+const app = express();
+
+//路由
+app.get('/', function(req, res) {
+  res.send('Hello World 你好世界')
+});
+// 开启服务器
+app.listen(3000, err => {
+  if (!err) {
+    console.log('服务已开启');
+  }
+});
+
+### 2.运行在小黑窗中
+nodemon 文件名
+nodemon这个功能只能是在gitbash环境下运行
+
+### 3.实现静态资源服务器的功能
+
+- // 导包
+const express = require('express');
+// 创建服务器对象
+const app = express();
+
+// 实现静态资源服务器功能
+app.use(express.static('public'));
+// 开启服务器
+app.listen(3000, err => {
+  if (!err) {
+    console.log('服务已启动');
+  }
+});
+- app.use(express.static('public'));
+这个public也是可以动态改变的，但是一般是比较建议在代码的同级目录下边儿
+添加public这个文件夹，这样是方便管理的。
+
+### 4.路由的概念
+
+- get请求
+
+	- 语法
+
+		- 路由是url和后台逻辑/函数的对应关系
+app.get()是注册路由的步骤
+app.post()
+		- // get方式的请求接口书写
+app.get('/login', (request, response) => {
+  const arr = ['西红柿', '菜花炒肉', '花菜炒豆角'];
+  response.send(arr);
+});
+		- 获取随机笑话
+// get方式的请求接口书写
+app.get('/joke', (req, res) => {
+  const arr = ['我是笑话1', '我是笑话2', '我是笑话3', '我是笑话4', '我是笑话5'];
+  const suiji = parseInt(Math.random() * 5);
+
+  console.log(suiji);
+  res.send(arr[suiji]);
+});
+
+	- 读取外部的一个文件
+
+		- JSON.parse();--->JSON字符串转数组类型。
+		- JSON.strfiy();--->数组类型转字符串
+		- // 导包
+const express = require('express');
+// 导包
+const fs = require('fs');
+// 导包
+const path = require('path');
+// 创建服务器对象
+const app = express();
+
+// get方式的请求接口书写
+app.get('/joke', (req, res) => {
+  //   声明一个数组
+  const arr = ['笑话1', '笑话2', '笑话3', '笑话4', '看着路世界真滴大', '于是啥子人都有'];
+  // 获取一个随机数
+  var suiji = parseInt(Math.random() * arr.length);
+  //   响应一个随机笑话
+  res.send(arr[suiji]);
+});
+
+
+// 获取随机的笑话
+app.get('/suijixiaohua', (req, res) => {
+  // 获取路径
+  var all_path = path.join(__dirname, './data/jokes.json');
+  // 读取文件
+  fs.readFile(all_path, 'utf-8', (erro, data) => {
+    if (erro == null) {
+      // 读取成功
+      // 读取出来的data的默认类型是JSON类型的字符串，我们要将这个字符串转成数组
+      var arr = JSON.parse(data);
+      //   获取一下随机数
+      var suiji = parseInt(Math.random() * arr.length);
+      //   响应请求
+      res.send(arr[suiji]);
+    } else {
+      // 读取失败
+      console.log(erro);
+    }
+  });
+});
+
+// 实现静态资源服务器功能
+app.use(express.static('public'));
+// 开启服务器
+app.listen(3000, err => {
+  console.log(err);
+  if (!err) {
+    console.log('服务已启动');
+  }
+});
+
+	- get请求参数的获取
+
+		- get请求的数据都存到了在query属性中
+request.query.属性名进行获取响应的数据
+并且是以对象的方式进行了存储
+		- 注意：
+
+			- 1.当涉及到参数传递时，
+后台接口在实现的时候需要
+接收数据
+处理数据
+返回数据
+
+- post请求
+
+	- post请求方式
+
+		- post路由的注册方法和get类似，就是将get改成post即可
+请求方式默认接不到请求数据
+		- 测试的时候：
+可以通过postman这个软件发送post请求
+		- 默认注册的post路由中无法获取到提交过来的参数（数据）
+		- 中间件是一个特殊的第三方模块
+必须结合express才能可以使用
+类似和jQuery插件必须要结合jQueryjs使用
+		- 中间件 body-parser  的使用步骤
+
+			- 下包  npm i body-parser
+			- 引包    // 导入中间件包
+const bodyParser = require('body-parser');
+			- 用包    // 解析post请求中的数据
+app.use(bodyParser.urlencoded({ extended: false }))
+
+	- 通过中间件获取到上传文件
+
+		- 也是使用中间件来获取
+express-fileupload中间件叫这个
+下包：npm i express-fileupload
+		- 导包
+const fileUpload = require('express-fileupload');
+		- 使用中间件 接收文件
+app.use(fileUpload());
+		- 使用postman软件来测试的时候，需要选择body下的第二个form-data
+		- 使用了中间件之后可以使用request.files获取到文件的信息
+files中使用对象属性的方式，保存了上传的文件信息
+		- 把文件移动到某个文件夹中
+request.files.xxx.mv(路径)
 
 ## 第六天
 
 ## 第五天
 
 ## 第四天
+
+### 数据库
 
 *XMind: ZEN - Trial Version*
