@@ -1,4 +1,4 @@
-# Nodejs技术点学习
+# Node.js技术点学习
 
 ## 第一天
 
@@ -505,6 +505,17 @@ request.url--->获取用户的请求参数
      使用对应的方式去解析，所有当页面中图片格式的文件的时候，readFile()这个方法中的utf-8就不用写了。
      学名叫嗅探，加载之前先嗅嗅。。
 
+### 17.在向服务器发送请求的时候，如果不要浏览器发送关于icon.ico图标的请求只需要加一个判断即可
+// 搭建一个静态资源服务器
+// 导包
+const http = require('http');
+// 创建服务器对象
+const server = http.createServer((request, response) => {
+   加一个判断只要判断返回值不是/favicon.ico即可
+  if (request.url !== "/favicon.ico") {
+   //逻辑代码
+}
+
 ## 第三天
 
 ### 1.express基本使用
@@ -545,8 +556,12 @@ app.listen(3000, err => {
   }
 });
 - app.use(express.static('public'));
+这钟方式请求的时候，不需要跟public，程序会直接去public文件夹下读取文件
+例如：http://localhost:3000/index.html；
 这个public也是可以动态改变的，但是一般是比较建议在代码的同级目录下边儿
 添加public这个文件夹，这样是方便管理的。
+app.use('/public',express.static('public'));--->这种方式进行请求的时候需要先写/public再跟想要访问的HTML文件
+例如：http://localhost:3000/public/index.html
 
 ### 4.路由的概念
 
@@ -648,6 +663,8 @@ request.query.属性名进行获取响应的数据
 请求方式默认接不到请求数据
 		- 测试的时候：
 可以通过postman这个软件发送post请求
+也可以使用ajax发送post请求，不过这种方式需要些一些代码，比较麻烦
+推荐使用postman发送post请求。
 		- 默认注册的post路由中无法获取到提交过来的参数（数据）
 		- 中间件是一个特殊的第三方模块
 必须结合express才能可以使用
@@ -657,8 +674,14 @@ request.query.属性名进行获取响应的数据
 			- 下包  npm i body-parser
 			- 引包    // 导入中间件包
 const bodyParser = require('body-parser');
-			- 用包    // 解析post请求中的数据
+			- 用包    // 解析post请求中的文本
 app.use(bodyParser.urlencoded({ extended: false }))
+			- // 注册post路由
+app.post('/ppost', (req, resp) => {
+  console.log(req.body);
+  resp.send('post请求收到了');
+});
+			- post请求中携带的参数是存在了req.body中了
 
 	- 通过中间件获取到上传文件
 
@@ -669,11 +692,42 @@ express-fileupload中间件叫这个
 const fileUpload = require('express-fileupload');
 		- 使用中间件 接收文件
 app.use(fileUpload());
-		- 使用postman软件来测试的时候，需要选择body下的第二个form-data
+		- 使用postman软件来测试的时候，需要选择body下的第一个form-data
 		- 使用了中间件之后可以使用request.files获取到文件的信息
 files中使用对象属性的方式，保存了上传的文件信息
+这个files属性并且是以对象的形式将文件数据进行了存储
+files对象包含了所有了文件的信息
+
+			- app.post('/ppost', (req, resp) => {
+  //   console.log(req);
+  console.log(req.files.icon);--->这里的icon就是文件上传时的键名
+  console.log(req.files.wje);--->这里的wje就是文件上传是的键名
+
+  resp.send('文件已收到');
+});
+			- post上传时的键名
+
 		- 把文件移动到某个文件夹中
 request.files.xxx.mv(路径)
+
+			- // 使用中间件接收文件
+app.use(fileupload());
+// 注册post路由
+app.post('/ppost', (req, resp) => {
+  //   console.log(req);
+  //   现在这个文件获取到了
+  console.log(req.files.icon);
+  //   我们需要获取到文件名
+  const filename = req.files.icon.name;
+  //   打印一下这个文件名
+  //   console.log(name);
+  //   生成一个路径
+  const allpath = path.join(__dirname, './files/', filename);
+  req.files.icon.mv(allpath, err => {
+    if (!err) {
+      console.log('文件传过来了');
+    }
+  });
 
 ## 第六天
 
@@ -681,6 +735,297 @@ request.files.xxx.mv(路径)
 
 ## 第四天
 
-### 数据库
+### 1.跨域问题
+
+- ***ajax请求***不同源接口的时候会出现跨域问题
+-    ***浏览器***为了保护我们帮我们做的限制
+- 浏览器打开的页面，和调用的接口需要同源才可以调用
+- url地址的组成：
+http://127.0.0.1:3000/search
+
+	- 协议：http://
+	- ip地址：127.0.0.1
+	- 端口：3000
+
+### 2.浏览器同源
+
+-  协议、ip地址、端口全部相同，称为同源
+- 页面地址和接口地址同源，浏览器就不会做任何的限制，可以自由的访问。
+- 协议、地址（这里的地址包括页面地址和接口地址）、端口任意一个不相同就是跨域
+- url地址组成：http://127.0.0.1:3000/search
+
+	- 协议：http://
+	- ip地址：127.0.0.1
+	- 端口：30000
+
+- 什么是不同源
+
+	- 1.对比浏览器打开页面的地址和页面向ajax调用接口的地址
+这两个地址是不一样的，所以是不同源，协议，ip地址，端口号只要有一个不相同就是不同源。是要是出现了不同源额情况，浏览器就禁止访问。
+
+- 实际工作中不可避免页面和接口地址绝对同源，肯定有解决方法
+
+	- 第一种解决方案：cors--->用的最多
+	- 第二种解决方案：jsonp--->曾经用的最多，现在用的少了，但是面试可能会问到
+
+- 往不同源的接口发送请求，牛逼名叫跨域
+
+### 3.第一个解决跨域的方案
+jsonp
+
+- 1.民间的解决方案，这种方法需要前端和后端相互配合
+- 使用方式：
+
+	- 前端需要做的事儿
+$.ajax({
+   url:  
+   type:必须是get方式或者不写这个参数
+   success：function(result){},
+   //这个dataType必须要加上
+   dataType:'jsonp',
+});
+后端需要做的方式：
+response.jsonp({key:value});
+例如：
+response.jsonp({
+  msg:
+  
+});
+
+- 注意：
+如果接口是jsonp
+前端要干的事儿是
+1.dataType:'jsonp',
+2.type:'get'或者省略不写
+数据的发送，请求成功之后的回调函数和之前完全一样
+3.这个后端代码response.jsonp({key:value});不需要我们去写；
+- jsonp的工作原理
+
+	- script标签的src属性可以发送请求，没有同源限制。
+jsonp跟ajax一点儿关系都木有，在network中选到XHR会发现什么都没有，
+	- 本质是动态创建了一个script标签并添加到了head标签中
+
+- jsonp的缺点：
+不支持post请求，
+数据大的话，搞不定，文件上传搞不定
+
+### 4.第二个解决跨域的方案
+CORS
+
+- CORS
+corss:跨
+origin：域
+resource：资源
+sharing:共享
+- 目前用的最多的方案
+- H5中推出的新标准，低版本浏览器不支持ie
+- 用起来很简单
+前端不需要改变什么
+后端只需要允许即可
+在express中需要设置
+响应数据之前：设置一个header
+app.get('/corsPOST',(req,resp)=>{
+   resp.header('Access-Control-Allow-Origin','*');
+})
+- 浏览器要识别
+('Access-Control-Allow-Origin','*')
+这个东西
+请求发给服务器之后，
+服务器返回的响应头中有一个允许的标记
+浏览器就认为服务器允许跨域访问，没有了跨域的错误。
+- 缺点：
+兼容性比jsonp差一点
+- 优点：
+get和post都支持
+前端不需要添加任何代码
+无论是jsonp还是cors都需要和后端配合，
+
+### 5.在express 中自己写中间件来允许我们跨域
+
+- 在express中间件设置跨域
+中间件其实就是一个中间件
+通过注册一个所有请求都会允许跨域的代码
+- app.use((request,response,next)=>{
+  console.log('执行啦');
+  //设置允许跨域
+  response.header('Access-Control-Allow-Origin','*');
+  //调用next
+  next();
+})
+
+### 6.什么是中间件
+
+- 中间件就是请求和响应(注册路由)之间额外注册的一个回调函数
+中间件的顺序只能是写到路由函数的前面
+- app.use((request,response,next)=>{
+  console.log('我执行了');
+  //执行下一个
+  next();--->一定要写这个next()函数，才能执行这个中间件后面的路由的函数
+});
+- 这个中间件函数中的request和response这两个参数和路由中的request以及response这两个参数是共享的，中间件可以任意增加多个
+
+### 7.CommonJs标准
+
+- 使用CommonJs只有三句话
+- 先定义一个自定义模块
+自己写的模块在一个文件，在一个js文件中写自己需要调用的模块：
+写变量
+const userName = '牛逼';
+暴露出去
+//不推荐这种module.exports = userName;
+  //这里的module是一个内置的全局变量，所以可以直接拿过来使用
+module.exports = {
+  userName,
+  skill,
+  sayHi(){
+      console.log('看到小仙女好开森~~');
+   }
+}
+- 在使用自定义的模块
+导入模块是一个文件
+require('自己写的模块路径');
+require('./05.自己定义的模块.js');--->这里的.js可以省略调
+- 自己抽取的功能模块一般都是放到一个叫utils的文件夹中，这个文件夹中只放自己抽取的功能模块。
+- //将允许跨域的回调函数暴露出去
+module.exports =(request,response,next)=>{
+  console.log('执行啦');
+  //设置允许跨域
+  response.header('Access-Control-Allow-Origin','*');
+  //调用next
+  next();
+}
+- 补充：
+工作中常见的文件名：
+utils：自己抽取的功能模块
+libs：下载的第三方模块（自己手动下载的）
+node_modules:  npm i 模块名  自动下载的文件夹，内部保存第三方模块
+
+### 8.MySql数据库
+
+- 数据库分类
+
+	- 关系型数据库
+
+		- 类似于table表格的形式保存数据
+		- 使用sql语句操纵数据
+		- 常见的数据库有：MySql，Oracle，MSSql（微软自家的）
+
+	- 非关系型数据库
+
+		- 用类似于js对象的形式保存数据
+		- 使用操纵对象的形式操纵数据
+		- 常见的有Mongodb，Redis。。。
+
+- 数据库管理员  DBA：DataBaseAdmin
+- 数据库服务器：只提供数据库服务，其他的软件都不用开
+- MySql特点
+免费
+开源，可以看到源代码
+轻量级 小
+作为关系型数据库的市场份额比较大
+- MySql基本使用
+
+	- 建库
+	- 建表
+	- 增加字段
+	- 增删改查
+
+		- 增--->了解即可
+insert into 表名 （字段名1，字段名2...）  values('值1'，'值2'...);
+insert into user (username,skill) values('小鹿','唱跳rap');
+		- 删---> 不跟条件的话，表中的所有数据都会被删除
+delete form 表名  where  条件
+		- 改--->改也需要跟条件，如果不跟条件的话，就是更改所有的数据
+update 表名 set 字段1=值1，字段2=值2 where 条件；
+		- 查--->如果不跟条件就是查询所有
+select * form 表名 条件；
+例如：select * from user where id=15;
+
+### 9.MySql模块的使用
+
+- var mysql = require('mysql');
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'root',
+  database: 'db88'
+});
+// 链接数据库
+connection.connect();
+connection.query('select * from user', function(error, results, fields) {
+  //    error：错误信息
+  console.log(error);
+  //    results：执行的结果
+  console.log(results);
+  //    fields: 表格的字段信息，用的不多
+  console.log(fields);
+});
+// 关闭数据库
+connection.end();
+
+### 10.mysql-ithm模块的使用（推荐使用这种方法）
+
+- 首先需要确保你的项目已经安装了mysql
+npm install mysql
+安装mysql-ithm
+npm install mysql-ithm
+- 剩下的就是粘贴复制就好了
+- 直接去npm官网去找mysql-ithm这个插件儿就行
+- 增
+// 添加数据
+// studentModel.insert({ name: '赵雷', age: 50 }, (err, results) => {
+//   console.log(err);
+//   console.log(results);
+//   if (!err) console.log('增加成功');
+// });
+- 查
+//2.1 查询所有数据
+studentModel.find((err, results) => {
+  console.log(results);
+});
+- 查询指定数据
+//2.3 根据条件查询数据
+// 'id=1' : 查询id为1的数据 (查询条件可以参考sql语句)
+//例如 'age>10' : 查询age超过10的数据 
+//例如 'name>"张三"' : 查询名字为张三的数据，注意字符串添加引号
+studentModel.find('id<4', (err, results) => {
+  console.log(results);
+});
+- 改  改所有的数据
+//3.1 将数据库中所有的age字段值：修改为25
+studentModel.update({ age: '25' }, (err, results) => {
+  console.log(results);
+});
+- 改   指定条件进行修改
+//3.2 将数据库中 id = 1 的数据，age修改为30
+studentModel.update('id=1', { age: 30 }, (err, results) => {
+  console.log(results);
+});
+- 删   删除表中的所有数据
+//4.2 清空表中所有数据
+studentModel.delete((err,results)=>{
+    console.log(results);
+});
+- 删   删除指定条件的数据
+//4.1 删除所有 age<2 的数据
+studentModel.delete('id<2', (err, results) => {
+  console.log(results);
+});
+- 执行自定义sql语句
+studentModel.sql('insert into student(name,age) values("andy",20)',(err,results)=>{
+    console.log(results);
+});
+- 删除表格   ***慎用***
+studentModel.drop((err,results)=>{
+    console.log(results);
+});
+
+### 补充：
+
+- app中没有跨域
+绝大数的app也需要和服务器交互
+使用的技术不是ajax，但是类似
+因为不是ajax，所有没有跨域问题，
+如果前端使用ajax请求app的服务器，需要后端配合设置一下跨域问题
 
 *XMind: ZEN - Trial Version*
