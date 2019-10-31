@@ -540,14 +540,15 @@ app.listen(3000, err => {
 nodemon 文件名
 nodemon这个功能只能是在gitbash环境下运行
 
-### 3.实现静态资源服务器的功能
+### 3.实现静态资源托管的功能
+app.use(express.static('public'));
 
 - // 导包
 const express = require('express');
 // 创建服务器对象
 const app = express();
 
-// 实现静态资源服务器功能
+// 实现静态资源托管功能代码
 app.use(express.static('public'));
 // 开启服务器
 app.listen(3000, err => {
@@ -564,6 +565,8 @@ app.use('/public',express.static('public'));--->这种方式进行请求的时�
 例如：http://localhost:3000/public/index.html
 
 ### 4.路由的概念
+一句话概括一下路由：
+url和后台逻辑的对应关系
 
 - get请求
 
@@ -731,7 +734,159 @@ app.post('/ppost', (req, resp) => {
 
 ## 第六天
 
+### 补充
+1.箭头函数的在委托事件中的指向：
+   上下文中的this
+
+### 用户的注册
+
+### 用户 登录
+
+### 验证码的功能
+
+- nmp i  svg-captcha
+- 导包
+require（'svg-captcha'）
+- var str = 'String';
+str.toLowerCase();--->转小写
+str.toUperCase();--->转大写
+- 前端如果要想获取验证码，我们使用img的src="/user/pac"这种方式调用接口
+其实就是在HTML标签中的img标签中的src属性直接写生成验证码的接口就可以了，工作中其实也是这么获取服务器生成的验证码图片的
+- 对于img标签src不变，浏览器会直接使用缓存的图片
+- 避免缓存，使用在url的后面拼接上?随机值的方式
+- 时间戳Data.now();
+- url后面?分割的内容，
+- 调用接口，密码加密
+
+	- 使用一个比较简单的算法
+md5算法：最初的设计是摘要算法，从一个数据中算出一些特征值
+计算的结果无法反算，满足加密算法的特点，有一部分分用它来进行加密
+	- 直接使用现成的库
+
+- 回话技术
+
+	- cookie技术
+
+		- http是无状态的
+		- cookie的作用：解决http不会记录客户端(用户信息)这个缺点。
+		- 存数据 一个技术
+		- cookie是服务器设置的
+		- 浏览器用来保存
+		- 容量是4kb，大数据存不了
+
+	- session技术
+
+		- session比cookie存到数据要大一些
+session要结合cookie使用
+		- 大量的数据是存放到session中，浏览器存的标记是存放到cookie中，浏览器是带着cookie中的标记去服务器中，服务器中会识别cookie中携带的标记会在session中查找用户的详细信息。
+		- session中保存的位置是在服务器中，保存的格式是key:value格式
+浏览器中保存了要给cookie(标记)
+浏览器再次请求服务器时，自动携带标记去服务器，服务器就可以根据标记获取对应的详细信息了。
+
+- 使用token这个技术来实现APP中存贮用户的详细信息
+计算时，会用到用户的一些信息，不同用户算出来的值是不同的
+计算完毕后，服务器直接返回给服务器，服务器什么都不存
+对服务器的性能消耗较小
+基于token的状态维持
+网站可以用
+app可以用
+服务器不需要存东西，对服务器的消耗较小
+- 面试时：
+1、localStorage和sessionStorage的区别
+     前者关闭浏览器数据还在
+     后者关闭浏览器数据就没有了
+     只能存字符串，如果要存复杂类型可以结合json.stringify
+2、localStorage和sessionStorage和cookie和session的区别：
+     1.cookie保存的位置是浏览器，数据是自动保存的，自动携带数据，但是容量较小，容量只有4Kb。
+     2.session保存的位置是服务器，浏览器用cookie存了一个标记；
+     3.服务器根据cookie携带而来的标记获取到详细的信息
+     4.session消耗服务器的性能，我之前的项目用的是token。
+     5.axios中可以用拦截器统一设置token
+     6.在Vue中用导航守卫统一判断是否有token
+
+### 花姐补充：
+同步和异步
+同步：从上到下依次执行
+绝大多数是同步
+
+
+异步：同时执行，某代码的执行，不会阻塞后续代码
+     1.绝大多数，异步执行的函数中都有回调函数
+     2.定时器和ajax都是异步机制
+     3.fs.readFile(path,(err,data)=>{})--->读文件也是异步
+     4.hmModel.find('',(err,result)=>{})--->访问数据库也是异步
+定时器中的代码会丢到事件循环中的一个里面
+等到不是定时器中的代码执行完毕后，会再向事件循环中看看，找到可以执行的事件，再将可以执行的事件执行，总之在定时器中的函数会在非定时器中的代码执行完毕后，再执行事件循环中的事件。
+
+### Echarts的基本使用
+
+- 常见的有柱状图，饼状图，折线图
+- 网页绘图可以使用
+canvas：网页中推出的一套绘图API
+              画线，圆，方框
+webg1:  更接近与底层的绘图API
+             相比canvas性能较好
+但是一般这两种方式是不用的
+
 ## 第五天
+
+### node和nodemon的区别
+使用node的时候需要自己手动重启服务器
+使用nodemon的时候重启服务器比较方便，保存服务器文件时候就自动重启服务器了，注意，使用nodemon必须是在bash环境下使用。
+
+### 英雄管理项目
+
+- 英雄管理的第一天目标
+实现英雄增删改查功能
+- 端口：
+一个端口与只能是被一个软件占用
+数据库的端口和express的端口不能是一样的
+port: '3306',     app.listen(3000,  这两个端口不能是一样的
+- 步骤
+1.新建文件夹heroManage
+2.初始化  npm init -y
+3.创建文件 index.js
+4.下包 npm i express
+5.c+v express的基本结构
+6.c+v 今天要写的路由
+7.首先需要确保你的项目已经安装了mysql
+npm install mysql
+安装mysql-ithm
+npm install mysql-ithm
+
+### 功能1：
+英雄管理：  查询所有英雄列表
+
+### 功能2：
+英雄管理：  查询英雄详情（根据id进行查询）
+这里需要注意：get请求的参数localhost:3000?id=1 这里的id=1我们该怎样获取到呢？记住：get请求的参数是存放到query属性中 request.query就可以看到get请求中的所有参数，query属性是对象类型，所以，query.id就能直接获取到传过来的id值。
+
+### 3.英雄管理:    新增英雄
+步骤：
+  1.接收post提交的文本信息  插件儿body-parser  (装包，导包，用包)
+用包 // 解析post请求中的文本  app.use(bodyParser.urlencoded({ extended: false }))
+   2.接收post提交的文件信息  插件儿 express-fileupload  (装包，导包，用包)
+    使用中间件 接收文件app.use(fileUpload());
+   3.获取数据
+         名字：name   request.body.name
+         技能：skill    request.body.skill
+         icon    request.files.icon.name  --->获取文件名
+   4.移动路径
+        1.‘request.files.icon.mv(路径，回调函数)’
+   5.保存数据到数据库：heroModel.insert
+    6.回调函数中
+       1.返回结果
+
+### mockjs库
+
+- 导包
+const Mock = require（'Mockjs'）
+
+### 先做新增功能
+
+### 再做修改
+
+### 最后做删除功能
 
 ## 第四天
 
@@ -808,6 +963,20 @@ jsonp跟ajax一点儿关系都木有，在network中选到XHR会发现什么都�
 - jsonp的缺点：
 不支持post请求，
 数据大的话，搞不定，文件上传搞不定
+无法进行大量数据的发送
+- 描述一下jsonp
+1.和ajax没有关系
+2.利用的是script标签的src属性不受跨域限制
+3.向不同源的服务器发送一个get请求
+4.url中携带了一个callback的参数
+5.服务器接收到了之后返回一个函数的调用
+   xxx({name:'jack'})
+6.返回浏览器之后解析成js代码。
+- 使用方法：
+前端：$.ajax({
+   type:'get',--->设置请求方式或者不写默认是get
+   dataTape:'jsonp',--->设置接收请求参数的类型
+})
 
 ### 4.第二个解决跨域的方案
 CORS
@@ -817,7 +986,7 @@ corss:跨
 origin：域
 resource：资源
 sharing:共享
-- 目前用的最多的方案
+- 目前解决跨域问题用的最多的方案
 - H5中推出的新标准，低版本浏览器不支持ie
 - 用起来很简单
 前端不需要改变什么
@@ -833,14 +1002,14 @@ app.get('/corsPOST',(req,resp)=>{
 请求发给服务器之后，
 服务器返回的响应头中有一个允许的标记
 浏览器就认为服务器允许跨域访问，没有了跨域的错误。
-- 缺点：
-兼容性比jsonp差一点
 - 优点：
 get和post都支持
 前端不需要添加任何代码
 无论是jsonp还是cors都需要和后端配合，
+- 缺点：
+兼容性比jsonp稍微差那么一点
 
-### 5.在express 中自己写中间件来允许我们跨域
+### 5.在express 中自己写中间件来允许我们跨域，在中间件中写了允许跨域的代码之后，后面的get  post请求就不需要每次请求之后都要写这个允许跨域的代码了
 
 - 在express中间件设置跨域
 中间件其实就是一个中间件
